@@ -8,7 +8,11 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowLeft, Plus, Trash2 } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { CalendarIcon, ArrowLeft, Plus, Trash2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { PricingStrategy, SKUType, PriceLimit } from "@/types/pricing";
 import { toast } from "@/hooks/use-toast";
 
@@ -28,7 +32,9 @@ const PricingStrategyForm = () => {
 
   const [formData, setFormData] = useState({
     name: '',
+    startDate: undefined as Date | undefined,
     startTime: '',
+    endDate: undefined as Date | undefined,
     endTime: '',
     skuType: '' as SKUType,
     pricingType: 'manual' as 'manual' | 'algorithm',
@@ -48,6 +54,10 @@ const PricingStrategyForm = () => {
 
   useEffect(() => {
     if (copyFrom) {
+      // 解析开始和结束时间
+      const startDateTime = new Date(copyFrom.startTime);
+      const endDateTime = new Date(copyFrom.endTime);
+      
       // Parse frequency string to extract count and unit
       const frequencyMatch = copyFrom.redPacket.displayFrequency?.match(/(\d+)次\/每(天|周)/);
       const frequencyCount = frequencyMatch ? frequencyMatch[1] : '';
@@ -55,8 +65,10 @@ const PricingStrategyForm = () => {
 
       setFormData({
         name: copyFrom.name + (isView ? '' : ' (复制)'),
-        startTime: copyFrom.startTime,
-        endTime: copyFrom.endTime,
+        startDate: startDateTime,
+        startTime: format(startDateTime, 'HH:mm'),
+        endDate: endDateTime,
+        endTime: format(endDateTime, 'HH:mm'),
         skuType: copyFrom.skuType,
         pricingType: copyFrom.pricingType,
         fixedPrice: copyFrom.fixedPrice?.toString() || '',
@@ -76,7 +88,7 @@ const PricingStrategyForm = () => {
   }, [copyFrom, isView]);
 
   const handleSave = () => {
-    if (!formData.name || !formData.startTime || !formData.endTime || !formData.skuType) {
+    if (!formData.name || !formData.startDate || !formData.endDate || !formData.skuType) {
       toast({ title: "错误", description: "请填写必填字段", variant: "destructive" });
       return;
     }
@@ -106,11 +118,11 @@ const PricingStrategyForm = () => {
     }));
   };
 
-  const updatePriceLimit = (index: number, field: keyof PriceLimit, value: number) => {
+  const updatePriceLimit = (index: number, field: keyof PriceLimit, value: string) => {
     setFormData(prev => ({
       ...prev,
       priceLimits: prev.priceLimits.map((item, i) => 
-        i === index ? { ...item, [field]: value } : item
+        i === index ? { ...item, [field]: value === '' ? 0 : Number(value) } : item
       )
     }));
   };
@@ -181,24 +193,76 @@ const PricingStrategyForm = () => {
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="startTime">开始时间 *</Label>
-                  <Input
-                    id="startTime"
-                    type="datetime-local"
-                    value={formData.startTime}
-                    onChange={(e) => setFormData(prev => ({ ...prev, startTime: e.target.value }))}
-                    disabled={isView}
-                  />
+                  <Label>开始时间 *</Label>
+                  <div className="flex space-x-2">
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "flex-1 justify-start text-left font-normal",
+                            !formData.startDate && "text-muted-foreground"
+                          )}
+                          disabled={isView}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {formData.startDate ? format(formData.startDate, "yyyy-MM-dd") : "选择日期"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={formData.startDate}
+                          onSelect={(date) => setFormData(prev => ({ ...prev, startDate: date }))}
+                          initialFocus
+                          className="pointer-events-auto"
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <Input
+                      type="time"
+                      value={formData.startTime}
+                      onChange={(e) => setFormData(prev => ({ ...prev, startTime: e.target.value }))}
+                      className="w-32"
+                      disabled={isView}
+                    />
+                  </div>
                 </div>
                 <div>
-                  <Label htmlFor="endTime">结束时间 *</Label>
-                  <Input
-                    id="endTime"
-                    type="datetime-local"
-                    value={formData.endTime}
-                    onChange={(e) => setFormData(prev => ({ ...prev, endTime: e.target.value }))}
-                    disabled={isView}
-                  />
+                  <Label>结束时间 *</Label>
+                  <div className="flex space-x-2">
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "flex-1 justify-start text-left font-normal",
+                            !formData.endDate && "text-muted-foreground"
+                          )}
+                          disabled={isView}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {formData.endDate ? format(formData.endDate, "yyyy-MM-dd") : "选择日期"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={formData.endDate}
+                          onSelect={(date) => setFormData(prev => ({ ...prev, endDate: date }))}
+                          initialFocus
+                          className="pointer-events-auto"
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <Input
+                      type="time"
+                      value={formData.endTime}
+                      onChange={(e) => setFormData(prev => ({ ...prev, endTime: e.target.value }))}
+                      className="w-32"
+                      disabled={isView}
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -313,8 +377,8 @@ const PricingStrategyForm = () => {
                   <div key={index} className="flex items-center space-x-2">
                     <Input
                       type="number"
-                      value={priceLimit.price}
-                      onChange={(e) => updatePriceLimit(index, 'price', Number(e.target.value))}
+                      value={priceLimit.price === 0 ? '' : priceLimit.price}
+                      onChange={(e) => updatePriceLimit(index, 'price', e.target.value)}
                       placeholder="价格"
                       className="flex-1"
                       disabled={isView}
@@ -322,8 +386,8 @@ const PricingStrategyForm = () => {
                     <span>元</span>
                     <Input
                       type="number"
-                      value={priceLimit.limit}
-                      onChange={(e) => updatePriceLimit(index, 'limit', Number(e.target.value))}
+                      value={priceLimit.limit === 0 ? '' : priceLimit.limit}
+                      onChange={(e) => updatePriceLimit(index, 'limit', e.target.value)}
                       placeholder="限购次数"
                       className="flex-1"
                       disabled={isView}

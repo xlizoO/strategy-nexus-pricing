@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,10 +23,10 @@ const PricingStrategiesList = () => {
   
   // 搜索和筛选状态
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedSKU, setSelectedSKU] = useState<string>('');
-  const [selectedPricingType, setSelectedPricingType] = useState<string>('');
-  const [selectedCreator, setSelectedCreator] = useState<string>('');
-  const [selectedStatus, setSelectedStatus] = useState<string>('');
+  const [selectedSKU, setSelectedSKU] = useState<string>('all');
+  const [selectedPricingType, setSelectedPricingType] = useState<string>('all');
+  const [selectedCreator, setSelectedCreator] = useState<string>('all');
+  const [selectedStatus, setSelectedStatus] = useState<string>('all');
 
   useEffect(() => {
     setStrategies(mockPricingStrategies);
@@ -50,12 +49,12 @@ const PricingStrategiesList = () => {
     }
 
     // 筛选SKU类型
-    if (selectedSKU) {
+    if (selectedSKU && selectedSKU !== 'all') {
       filtered = filtered.filter(strategy => strategy.skuType === selectedSKU);
     }
 
     // 筛选出价类型
-    if (selectedPricingType) {
+    if (selectedPricingType && selectedPricingType !== 'all') {
       filtered = filtered.filter(strategy => {
         if (selectedPricingType === 'manual') return strategy.pricingType === 'manual';
         if (selectedPricingType === 'algorithm') return strategy.pricingType === 'algorithm';
@@ -64,12 +63,12 @@ const PricingStrategiesList = () => {
     }
 
     // 筛选创建人
-    if (selectedCreator) {
+    if (selectedCreator && selectedCreator !== 'all') {
       filtered = filtered.filter(strategy => strategy.creator === selectedCreator);
     }
 
     // 筛选状态
-    if (selectedStatus) {
+    if (selectedStatus && selectedStatus !== 'all') {
       filtered = filtered.filter(strategy => strategy.status === selectedStatus);
     }
 
@@ -218,10 +217,10 @@ const PricingStrategiesList = () => {
 
   const clearFilters = () => {
     setSearchTerm('');
-    setSelectedSKU('');
-    setSelectedPricingType('');
-    setSelectedCreator('');
-    setSelectedStatus('');
+    setSelectedSKU('all');
+    setSelectedPricingType('all');
+    setSelectedCreator('all');
+    setSelectedStatus('all');
   };
 
   return (
@@ -241,7 +240,6 @@ const PricingStrategiesList = () => {
           </Button>
         </div>
 
-        {/* 搜索和筛选区域 */}
         <Card className="mb-6">
           <CardHeader>
             <CardTitle className="text-lg">搜索与筛选</CardTitle>
@@ -263,7 +261,7 @@ const PricingStrategiesList = () => {
                   <SelectValue placeholder="SKU类型" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">全部SKU</SelectItem>
+                  <SelectItem value="all">全部SKU</SelectItem>
                   {SKU_OPTIONS.map(sku => (
                     <SelectItem key={sku} value={sku}>{sku}</SelectItem>
                   ))}
@@ -275,7 +273,7 @@ const PricingStrategiesList = () => {
                   <SelectValue placeholder="出价类型" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">全部类型</SelectItem>
+                  <SelectItem value="all">全部类型</SelectItem>
                   <SelectItem value="manual">运营出价</SelectItem>
                   <SelectItem value="algorithm">算法出价</SelectItem>
                 </SelectContent>
@@ -286,7 +284,7 @@ const PricingStrategiesList = () => {
                   <SelectValue placeholder="创建人" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">全部创建人</SelectItem>
+                  <SelectItem value="all">全部创建人</SelectItem>
                   {creators.map(creator => (
                     <SelectItem key={creator} value={creator}>{creator}</SelectItem>
                   ))}
@@ -298,7 +296,7 @@ const PricingStrategiesList = () => {
                   <SelectValue placeholder="状态" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">全部状态</SelectItem>
+                  <SelectItem value="all">全部状态</SelectItem>
                   <SelectItem value="编辑中">编辑中</SelectItem>
                   <SelectItem value="生效中">生效中</SelectItem>
                   <SelectItem value="已完成">已完成</SelectItem>
