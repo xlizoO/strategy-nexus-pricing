@@ -23,6 +23,7 @@ const PricingStrategyForm = () => {
   const { id } = useParams();
   const location = useLocation();
   const isEdit = !!id;
+  const isView = location.state?.isView;
   const copyFrom = location.state?.copyFrom as PricingStrategy;
 
   const [formData, setFormData] = useState({
@@ -38,7 +39,8 @@ const PricingStrategyForm = () => {
     priceLimits: [] as PriceLimit[],
     showRedPacket: true,
     redPacketMinutes: '',
-    redPacketFrequency: '',
+    redPacketFrequencyCount: '',
+    redPacketFrequencyUnit: 'daily' as 'daily' | 'weekly',
     hasBundle: false,
     giftType: '商品' as '商品' | '道具' | '道具包',
     giftIds: ['']
@@ -46,8 +48,13 @@ const PricingStrategyForm = () => {
 
   useEffect(() => {
     if (copyFrom) {
+      // Parse frequency string to extract count and unit
+      const frequencyMatch = copyFrom.redPacket.displayFrequency?.match(/(\d+)次\/每(天|周)/);
+      const frequencyCount = frequencyMatch ? frequencyMatch[1] : '';
+      const frequencyUnit = frequencyMatch && frequencyMatch[2] === '周' ? 'weekly' : 'daily';
+
       setFormData({
-        name: copyFrom.name + ' (复制)',
+        name: copyFrom.name + (isView ? '' : ' (复制)'),
         startTime: copyFrom.startTime,
         endTime: copyFrom.endTime,
         skuType: copyFrom.skuType,
@@ -59,13 +66,14 @@ const PricingStrategyForm = () => {
         priceLimits: copyFrom.priceLimits,
         showRedPacket: copyFrom.redPacket.showAnimation,
         redPacketMinutes: copyFrom.redPacket.validityMinutes?.toString() || '',
-        redPacketFrequency: copyFrom.redPacket.displayFrequency || '',
+        redPacketFrequencyCount: frequencyCount,
+        redPacketFrequencyUnit: frequencyUnit,
         hasBundle: copyFrom.bundle.hasBundle,
         giftType: copyFrom.bundle.giftType || '商品',
         giftIds: copyFrom.bundle.giftIds || ['']
       });
     }
-  }, [copyFrom]);
+  }, [copyFrom, isView]);
 
   const handleSave = () => {
     if (!formData.name || !formData.startTime || !formData.endTime || !formData.skuType) {
@@ -138,17 +146,19 @@ const PricingStrategyForm = () => {
               返回列表
             </Button>
             <h1 className="text-3xl font-bold text-gray-900">
-              {isEdit ? '编辑' : '创建'}价格策略
+              {isView ? '查看' : (isEdit ? '编辑' : '创建')}价格策略
             </h1>
           </div>
-          <div className="flex space-x-3">
-            <Button variant="outline" onClick={handleCancel}>
-              取消
-            </Button>
-            <Button onClick={handleSave} className="bg-blue-600 hover:bg-blue-700">
-              保存
-            </Button>
-          </div>
+          {!isView && (
+            <div className="flex space-x-3">
+              <Button variant="outline" onClick={handleCancel}>
+                取消
+              </Button>
+              <Button onClick={handleSave} className="bg-blue-600 hover:bg-blue-700">
+                保存
+              </Button>
+            </div>
+          )}
         </div>
 
         <div className="max-w-4xl mx-auto space-y-6">
@@ -165,6 +175,7 @@ const PricingStrategyForm = () => {
                   value={formData.name}
                   onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                   placeholder="连续包月-15元-赠网易云月卡"
+                  disabled={isView}
                 />
               </div>
               
@@ -176,6 +187,7 @@ const PricingStrategyForm = () => {
                     type="datetime-local"
                     value={formData.startTime}
                     onChange={(e) => setFormData(prev => ({ ...prev, startTime: e.target.value }))}
+                    disabled={isView}
                   />
                 </div>
                 <div>
@@ -185,13 +197,14 @@ const PricingStrategyForm = () => {
                     type="datetime-local"
                     value={formData.endTime}
                     onChange={(e) => setFormData(prev => ({ ...prev, endTime: e.target.value }))}
+                    disabled={isView}
                   />
                 </div>
               </div>
 
               <div>
                 <Label>SKU类型 *</Label>
-                <Select value={formData.skuType} onValueChange={(value) => setFormData(prev => ({ ...prev, skuType: value as SKUType }))}>
+                <Select value={formData.skuType} onValueChange={(value) => setFormData(prev => ({ ...prev, skuType: value as SKUType }))} disabled={isView}>
                   <SelectTrigger>
                     <SelectValue placeholder="请选择SKU类型" />
                   </SelectTrigger>
@@ -214,13 +227,14 @@ const PricingStrategyForm = () => {
               <RadioGroup 
                 value={formData.pricingType} 
                 onValueChange={(value) => setFormData(prev => ({ ...prev, pricingType: value as 'manual' | 'algorithm' }))}
+                disabled={isView}
               >
                 <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="manual" id="manual" />
+                  <RadioGroupItem value="manual" id="manual" disabled={isView} />
                   <Label htmlFor="manual">运营出价</Label>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="algorithm" id="algorithm" />
+                  <RadioGroupItem value="algorithm" id="algorithm" disabled={isView} />
                   <Label htmlFor="algorithm">算法出价</Label>
                 </div>
               </RadioGroup>
@@ -234,6 +248,7 @@ const PricingStrategyForm = () => {
                     value={formData.fixedPrice}
                     onChange={(e) => setFormData(prev => ({ ...prev, fixedPrice: e.target.value }))}
                     placeholder="请输入价格"
+                    disabled={isView}
                   />
                 </div>
               ) : (
@@ -246,6 +261,7 @@ const PricingStrategyForm = () => {
                       value={formData.minPrice}
                       onChange={(e) => setFormData(prev => ({ ...prev, minPrice: e.target.value }))}
                       placeholder="请输入最低价"
+                      disabled={isView}
                     />
                   </div>
                   <div>
@@ -256,6 +272,7 @@ const PricingStrategyForm = () => {
                       value={formData.maxPrice}
                       onChange={(e) => setFormData(prev => ({ ...prev, maxPrice: e.target.value }))}
                       placeholder="请输入最高价"
+                      disabled={isView}
                     />
                   </div>
                 </div>
@@ -277,16 +294,19 @@ const PricingStrategyForm = () => {
                   value={formData.totalPurchaseLimit}
                   onChange={(e) => setFormData(prev => ({ ...prev, totalPurchaseLimit: e.target.value }))}
                   placeholder="-1代表不限制"
+                  disabled={isView}
                 />
               </div>
 
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <Label>分档限购</Label>
-                  <Button type="button" variant="outline" size="sm" onClick={addPriceLimit}>
-                    <Plus className="w-4 h-4 mr-1" />
-                    添加档位
-                  </Button>
+                  {!isView && (
+                    <Button type="button" variant="outline" size="sm" onClick={addPriceLimit}>
+                      <Plus className="w-4 h-4 mr-1" />
+                      添加档位
+                    </Button>
+                  )}
                 </div>
                 
                 {formData.priceLimits.map((priceLimit, index) => (
@@ -297,6 +317,7 @@ const PricingStrategyForm = () => {
                       onChange={(e) => updatePriceLimit(index, 'price', Number(e.target.value))}
                       placeholder="价格"
                       className="flex-1"
+                      disabled={isView}
                     />
                     <span>元</span>
                     <Input
@@ -305,11 +326,14 @@ const PricingStrategyForm = () => {
                       onChange={(e) => updatePriceLimit(index, 'limit', Number(e.target.value))}
                       placeholder="限购次数"
                       className="flex-1"
+                      disabled={isView}
                     />
                     <span>次/人</span>
-                    <Button type="button" variant="outline" size="sm" onClick={() => removePriceLimit(index)}>
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                    {!isView && (
+                      <Button type="button" variant="outline" size="sm" onClick={() => removePriceLimit(index)}>
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    )}
                   </div>
                 ))}
               </div>
@@ -327,6 +351,7 @@ const PricingStrategyForm = () => {
                   id="showRedPacket"
                   checked={formData.showRedPacket}
                   onCheckedChange={(checked) => setFormData(prev => ({ ...prev, showRedPacket: !!checked }))}
+                  disabled={isView}
                 />
                 <Label htmlFor="showRedPacket">展示红包动效</Label>
               </div>
@@ -341,16 +366,35 @@ const PricingStrategyForm = () => {
                       value={formData.redPacketMinutes}
                       onChange={(e) => setFormData(prev => ({ ...prev, redPacketMinutes: e.target.value }))}
                       placeholder="请输入有效期"
+                      disabled={isView}
                     />
                   </div>
-                  <div>
-                    <Label htmlFor="redPacketFrequency">红包展示频次</Label>
-                    <Input
-                      id="redPacketFrequency"
-                      value={formData.redPacketFrequency}
-                      onChange={(e) => setFormData(prev => ({ ...prev, redPacketFrequency: e.target.value }))}
-                      placeholder="如：3次/每天 或 每周"
-                    />
+                  <div className="space-y-2">
+                    <Label>红包展示频次</Label>
+                    <div className="flex items-center space-x-2">
+                      <Input
+                        type="number"
+                        value={formData.redPacketFrequencyCount}
+                        onChange={(e) => setFormData(prev => ({ ...prev, redPacketFrequencyCount: e.target.value }))}
+                        placeholder="请输入次数"
+                        className="flex-1"
+                        disabled={isView}
+                      />
+                      <span>次 /</span>
+                      <Select 
+                        value={formData.redPacketFrequencyUnit} 
+                        onValueChange={(value) => setFormData(prev => ({ ...prev, redPacketFrequencyUnit: value as 'daily' | 'weekly' }))}
+                        disabled={isView}
+                      >
+                        <SelectTrigger className="w-32">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="daily">每天</SelectItem>
+                          <SelectItem value="weekly">每周</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                 </div>
               )}
@@ -368,6 +412,7 @@ const PricingStrategyForm = () => {
                   id="hasBundle"
                   checked={formData.hasBundle}
                   onCheckedChange={(checked) => setFormData(prev => ({ ...prev, hasBundle: !!checked }))}
+                  disabled={isView}
                 />
                 <Label htmlFor="hasBundle">有搭售策略</Label>
               </div>
@@ -376,7 +421,11 @@ const PricingStrategyForm = () => {
                 <div className="space-y-4 pl-6">
                   <div>
                     <Label>赠品类型</Label>
-                    <Select value={formData.giftType} onValueChange={(value) => setFormData(prev => ({ ...prev, giftType: value as '商品' | '道具' | '道具包' }))}>
+                    <Select 
+                      value={formData.giftType} 
+                      onValueChange={(value) => setFormData(prev => ({ ...prev, giftType: value as '商品' | '道具' | '道具包' }))}
+                      disabled={isView}
+                    >
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
@@ -391,10 +440,12 @@ const PricingStrategyForm = () => {
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <Label>赠品发放ID</Label>
-                      <Button type="button" variant="outline" size="sm" onClick={addGiftId}>
-                        <Plus className="w-4 h-4 mr-1" />
-                        添加ID
-                      </Button>
+                      {!isView && (
+                        <Button type="button" variant="outline" size="sm" onClick={addGiftId}>
+                          <Plus className="w-4 h-4 mr-1" />
+                          添加ID
+                        </Button>
+                      )}
                     </div>
                     
                     {formData.giftIds.map((giftId, index) => (
@@ -404,8 +455,9 @@ const PricingStrategyForm = () => {
                           onChange={(e) => updateGiftId(index, e.target.value)}
                           placeholder="请输入赠品ID"
                           className="flex-1"
+                          disabled={isView}
                         />
-                        {formData.giftIds.length > 1 && (
+                        {!isView && formData.giftIds.length > 1 && (
                           <Button type="button" variant="outline" size="sm" onClick={() => removeGiftId(index)}>
                             <Trash2 className="w-4 h-4" />
                           </Button>
