@@ -25,6 +25,10 @@ export const mockPricingStrategies: PricingStrategy[] = [
       giftType: "商品",
       giftIds: ["NETEASE_MUSIC_MONTH"]
     },
+    contract: {
+      hasContract: false,
+      strategies: []
+    },
     creator: "张三",
     status: "生效中",
     createdAt: "2024-01-01T08:00:00",
@@ -45,6 +49,10 @@ export const mockPricingStrategies: PricingStrategy[] = [
     },
     bundle: {
       hasBundle: false
+    },
+    contract: {
+      hasContract: false,
+      strategies: []
     },
     creator: "李四",
     status: "编辑中",
@@ -74,6 +82,12 @@ export const mockPricingStrategies: PricingStrategy[] = [
       giftType: "道具包",
       giftIds: ["PROP_PACK_001", "PROP_PACK_002"]
     },
+    contract: {
+      hasContract: true,
+      strategies: [
+        { period: 3, price: 40, rewardId: "REWARD_001" }
+      ]
+    },
     creator: "王五",
     status: "已暂停",
     createdAt: "2024-02-20T14:15:00",
@@ -98,6 +112,10 @@ export const mockPricingStrategies: PricingStrategy[] = [
     },
     bundle: {
       hasBundle: false
+    },
+    contract: {
+      hasContract: false,
+      strategies: []
     },
     creator: "赵六",
     status: "已完成",
@@ -127,6 +145,10 @@ export const mockPricingStrategies: PricingStrategy[] = [
       hasBundle: true,
       giftType: "道具",
       giftIds: ["SPRING_PROP_001"]
+    },
+    contract: {
+      hasContract: false,
+      strategies: []
     },
     creator: "孙七",
     status: "已下线",

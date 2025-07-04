@@ -30,6 +30,17 @@ export interface BundleConfig {
   giftIds?: string[];
 }
 
+export interface ContractStrategy {
+  period: number; // 首x次
+  price: number; // 签约价
+  rewardId?: string; // 奖励道具包ID（选填）
+}
+
+export interface ContractConfig {
+  hasContract: boolean;
+  strategies: ContractStrategy[];
+}
+
 export interface PricingStrategy {
   id: string;
   name: string;
@@ -43,6 +54,7 @@ export interface PricingStrategy {
   priceLimits: PriceLimit[];
   redPacket: RedPacketConfig;
   bundle: BundleConfig;
+  contract: ContractConfig;
   creator: string;
   status: PricingStrategyStatus;
   createdAt: string;

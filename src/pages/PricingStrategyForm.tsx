@@ -49,7 +49,9 @@ const PricingStrategyForm = () => {
     redPacketFrequencyUnit: 'daily' as 'daily' | 'weekly',
     hasBundle: false,
     giftType: '商品' as '商品' | '道具' | '道具包',
-    giftIds: ['']
+    giftIds: [''],
+    hasContract: false,
+    contractStrategies: [] as Array<{ period: string; price: string; rewardId: string }>
   });
 
   useEffect(() => {
@@ -82,7 +84,13 @@ const PricingStrategyForm = () => {
         redPacketFrequencyUnit: frequencyUnit,
         hasBundle: copyFrom.bundle.hasBundle,
         giftType: copyFrom.bundle.giftType || '商品',
-        giftIds: copyFrom.bundle.giftIds || ['']
+        giftIds: copyFrom.bundle.giftIds || [''],
+        hasContract: copyFrom.contract.hasContract,
+        contractStrategies: copyFrom.contract.strategies.map(s => ({
+          period: s.period.toString(),
+          price: s.price.toString(),
+          rewardId: s.rewardId || ''
+        }))
       });
     }
   }, [copyFrom, isView]);
@@ -145,6 +153,29 @@ const PricingStrategyForm = () => {
     setFormData(prev => ({
       ...prev,
       giftIds: prev.giftIds.map((item, i) => i === index ? value : item)
+    }));
+  };
+
+  const addContractStrategy = () => {
+    setFormData(prev => ({
+      ...prev,
+      contractStrategies: [...prev.contractStrategies, { period: '', price: '', rewardId: '' }]
+    }));
+  };
+
+  const removeContractStrategy = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      contractStrategies: prev.contractStrategies.filter((_, i) => i !== index)
+    }));
+  };
+
+  const updateContractStrategy = (index: number, field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      contractStrategies: prev.contractStrategies.map((item, i) => 
+        i === index ? { ...item, [field]: value } : item
+      )
     }));
   };
 
@@ -529,6 +560,103 @@ const PricingStrategyForm = () => {
                       </div>
                     ))}
                   </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* 签约策略 */}
+          <Card>
+            <CardHeader>
+              <CardTitle>签约策略</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="hasContract"
+                  checked={formData.hasContract}
+                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, hasContract: !!checked }))}
+                  disabled={isView}
+                />
+                <Label htmlFor="hasContract">有特定签约策略</Label>
+              </div>
+
+              {formData.hasContract && (
+                <div className="space-y-4 pl-6">
+                  <div className="flex items-center justify-between mb-2">
+                    <Label>签约策略配置</Label>
+                    {!isView && (
+                      <Button type="button" variant="outline" size="sm" onClick={addContractStrategy}>
+                        <Plus className="w-4 h-4 mr-1" />
+                        添加策略组
+                      </Button>
+                    )}
+                  </div>
+                  
+                  {formData.contractStrategies.map((strategy, index) => (
+                    <div key={index} className="border rounded-lg p-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-muted-foreground">策略组 {index + 1}</span>
+                        {!isView && formData.contractStrategies.length > 1 && (
+                          <Button type="button" variant="outline" size="sm" onClick={() => removeContractStrategy(index)}>
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        )}
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                          <Label>签约周期 *</Label>
+                          <div className="flex items-center space-x-2">
+                            <span className="text-sm">首</span>
+                            <Input
+                              type="number"
+                              value={strategy.period}
+                              onChange={(e) => updateContractStrategy(index, 'period', e.target.value)}
+                              placeholder="请输入次数"
+                              className="flex-1"
+                              disabled={isView}
+                            />
+                            <span className="text-sm">次</span>
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <Label>签约价 *</Label>
+                          <div className="flex items-center space-x-2">
+                            <Input
+                              type="number"
+                              value={strategy.price}
+                              onChange={(e) => updateContractStrategy(index, 'price', e.target.value)}
+                              placeholder="请输入价格"
+                              className="flex-1"
+                              disabled={isView}
+                            />
+                            <span className="text-sm">元</span>
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <Label>签约奖励</Label>
+                          <Input
+                            value={strategy.rewardId}
+                            onChange={(e) => updateContractStrategy(index, 'rewardId', e.target.value)}
+                            placeholder="奖励道具包ID（选填）"
+                            disabled={isView}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {formData.hasContract && formData.contractStrategies.length === 0 && !isView && (
+                    <div className="text-center py-4">
+                      <Button type="button" variant="outline" onClick={addContractStrategy}>
+                        <Plus className="w-4 h-4 mr-1" />
+                        添加第一个策略组
+                      </Button>
+                    </div>
+                  )}
                 </div>
               )}
             </CardContent>
