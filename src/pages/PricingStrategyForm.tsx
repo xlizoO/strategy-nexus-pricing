@@ -10,6 +10,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { format } from "date-fns";
 import { CalendarIcon, ArrowLeft, Plus, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -204,463 +205,489 @@ const PricingStrategyForm = () => {
           )}
         </div>
 
-        <div className="max-w-4xl mx-auto space-y-6">
-          {/* 基本信息 */}
-          <Card>
-            <CardHeader>
-              <CardTitle>基本信息</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="name">价格策略名称 *</Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                  placeholder="连续包月-15元-赠网易云月卡"
-                  disabled={isView}
-                />
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label>开始时间 *</Label>
-                  <div className="flex space-x-2">
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            "flex-1 justify-start text-left font-normal",
-                            !formData.startDate && "text-muted-foreground"
-                          )}
-                          disabled={isView}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {formData.startDate ? format(formData.startDate, "yyyy-MM-dd") : "选择日期"}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={formData.startDate}
-                          onSelect={(date) => setFormData(prev => ({ ...prev, startDate: date }))}
-                          initialFocus
-                          className="pointer-events-auto"
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <Input
-                      type="time"
-                      value={formData.startTime}
-                      onChange={(e) => setFormData(prev => ({ ...prev, startTime: e.target.value }))}
-                      className="w-32"
-                      disabled={isView}
-                    />
-                  </div>
-                </div>
-                <div>
-                  <Label>结束时间 *</Label>
-                  <div className="flex space-x-2">
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            "flex-1 justify-start text-left font-normal",
-                            !formData.endDate && "text-muted-foreground"
-                          )}
-                          disabled={isView}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {formData.endDate ? format(formData.endDate, "yyyy-MM-dd") : "选择日期"}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={formData.endDate}
-                          onSelect={(date) => setFormData(prev => ({ ...prev, endDate: date }))}
-                          initialFocus
-                          className="pointer-events-auto"
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <Input
-                      type="time"
-                      value={formData.endTime}
-                      onChange={(e) => setFormData(prev => ({ ...prev, endTime: e.target.value }))}
-                      className="w-32"
-                      disabled={isView}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <Label>SKU类型 *</Label>
-                <Select value={formData.skuType} onValueChange={(value) => setFormData(prev => ({ ...prev, skuType: value as SKUType }))} disabled={isView}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="请选择SKU类型" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {SKU_OPTIONS.map(option => (
-                      <SelectItem key={option} value={option}>{option}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* 售卖价格 */}
-          <Card>
-            <CardHeader>
-              <CardTitle>售卖价格</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <RadioGroup 
-                value={formData.pricingType} 
-                onValueChange={(value) => setFormData(prev => ({ ...prev, pricingType: value as 'manual' | 'algorithm' }))}
-                disabled={isView}
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="manual" id="manual" disabled={isView} />
-                  <Label htmlFor="manual">运营出价</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="algorithm" id="algorithm" disabled={isView} />
-                  <Label htmlFor="algorithm">算法出价</Label>
-                </div>
-              </RadioGroup>
-
-              {formData.pricingType === 'manual' ? (
-                <div>
-                  <Label htmlFor="fixedPrice">固定价格</Label>
-                  <Input
-                    id="fixedPrice"
-                    type="number"
-                    value={formData.fixedPrice}
-                    onChange={(e) => setFormData(prev => ({ ...prev, fixedPrice: e.target.value }))}
-                    placeholder="请输入价格"
-                    disabled={isView}
-                  />
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="minPrice">最低价</Label>
-                    <Input
-                      id="minPrice"
-                      type="number"
-                      value={formData.minPrice}
-                      onChange={(e) => setFormData(prev => ({ ...prev, minPrice: e.target.value }))}
-                      placeholder="请输入最低价"
-                      disabled={isView}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="maxPrice">最高价</Label>
-                    <Input
-                      id="maxPrice"
-                      type="number"
-                      value={formData.maxPrice}
-                      onChange={(e) => setFormData(prev => ({ ...prev, maxPrice: e.target.value }))}
-                      placeholder="请输入最高价"
-                      disabled={isView}
-                    />
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* 用户限购 */}
-          <Card>
-            <CardHeader>
-              <CardTitle>用户限购</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="totalLimit">总购买次数限制</Label>
-                <Input
-                  id="totalLimit"
-                  type="number"
-                  value={formData.totalPurchaseLimit}
-                  onChange={(e) => setFormData(prev => ({ ...prev, totalPurchaseLimit: e.target.value }))}
-                  placeholder="-1代表不限制"
-                  disabled={isView}
-                />
-              </div>
-
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <Label>分档限购</Label>
-                  {!isView && (
-                    <Button type="button" variant="outline" size="sm" onClick={addPriceLimit}>
-                      <Plus className="w-4 h-4 mr-1" />
-                      添加档位
-                    </Button>
-                  )}
-                </div>
-                
-                {formData.priceLimits.map((priceLimit, index) => (
-                  <div key={index} className="flex items-center space-x-2">
-                    <Input
-                      type="number"
-                      value={priceLimit.price === 0 ? '' : priceLimit.price}
-                      onChange={(e) => updatePriceLimit(index, 'price', e.target.value)}
-                      placeholder="价格"
-                      className="flex-1"
-                      disabled={isView}
-                    />
-                    <span>元</span>
-                    <Input
-                      type="number"
-                      value={priceLimit.limit === 0 ? '' : priceLimit.limit}
-                      onChange={(e) => updatePriceLimit(index, 'limit', e.target.value)}
-                      placeholder="限购次数"
-                      className="flex-1"
-                      disabled={isView}
-                    />
-                    <span>次/人</span>
-                    {!isView && (
-                      <Button type="button" variant="outline" size="sm" onClick={() => removePriceLimit(index)}>
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* 限时红包 */}
-          <Card>
-            <CardHeader>
-              <CardTitle>限时红包</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="showRedPacket"
-                  checked={formData.showRedPacket}
-                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, showRedPacket: !!checked }))}
-                  disabled={isView}
-                />
-                <Label htmlFor="showRedPacket">展示红包动效</Label>
-              </div>
-
-              {formData.showRedPacket && (
-                <div className="space-y-4 pl-6">
-                  <div>
-                    <Label htmlFor="redPacketMinutes">红包有效期（分钟）</Label>
-                    <Input
-                      id="redPacketMinutes"
-                      type="number"
-                      value={formData.redPacketMinutes}
-                      onChange={(e) => setFormData(prev => ({ ...prev, redPacketMinutes: e.target.value }))}
-                      placeholder="请输入有效期"
-                      disabled={isView}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>红包展示频次</Label>
-                    <div className="flex items-center space-x-2">
+        <div className="max-w-4xl mx-auto">
+          <Accordion type="multiple" defaultValue={["basic-info"]} className="space-y-4">
+            {/* 基本信息 */}
+            <AccordionItem value="basic-info">
+              <Card>
+                <AccordionTrigger className="px-6 py-4 hover:no-underline">
+                  <CardTitle>基本信息</CardTitle>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <CardContent className="space-y-4 pt-0">
+                    <div>
+                      <Label htmlFor="name">价格策略名称 *</Label>
                       <Input
-                        type="number"
-                        value={formData.redPacketFrequencyCount}
-                        onChange={(e) => setFormData(prev => ({ ...prev, redPacketFrequencyCount: e.target.value }))}
-                        placeholder="请输入次数"
-                        className="flex-1"
+                        id="name"
+                        value={formData.name}
+                        onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                        placeholder="连续包月-15元-赠网易云月卡"
                         disabled={isView}
                       />
-                      <span>次 /</span>
-                      <Select 
-                        value={formData.redPacketFrequencyUnit} 
-                        onValueChange={(value) => setFormData(prev => ({ ...prev, redPacketFrequencyUnit: value as 'daily' | 'weekly' }))}
-                        disabled={isView}
-                      >
-                        <SelectTrigger className="w-32">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="daily">每天</SelectItem>
-                          <SelectItem value="weekly">每周</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* 搭售买赠 */}
-          <Card>
-            <CardHeader>
-              <CardTitle>搭售买赠</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="hasBundle"
-                  checked={formData.hasBundle}
-                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, hasBundle: !!checked }))}
-                  disabled={isView}
-                />
-                <Label htmlFor="hasBundle">有搭售策略</Label>
-              </div>
-
-              {formData.hasBundle && (
-                <div className="space-y-4 pl-6">
-                  <div>
-                    <Label>赠品类型</Label>
-                    <Select 
-                      value={formData.giftType} 
-                      onValueChange={(value) => setFormData(prev => ({ ...prev, giftType: value as '商品' | '道具' | '道具包' }))}
-                      disabled={isView}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="商品">商品</SelectItem>
-                        <SelectItem value="道具">道具</SelectItem>
-                        <SelectItem value="道具包">道具包</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <Label>赠品发放ID</Label>
-                      {!isView && (
-                        <Button type="button" variant="outline" size="sm" onClick={addGiftId}>
-                          <Plus className="w-4 h-4 mr-1" />
-                          添加ID
-                        </Button>
-                      )}
                     </div>
                     
-                    {formData.giftIds.map((giftId, index) => (
-                      <div key={index} className="flex items-center space-x-2 mb-2">
-                        <Input
-                          value={giftId}
-                          onChange={(e) => updateGiftId(index, e.target.value)}
-                          placeholder="请输入赠品ID"
-                          className="flex-1"
-                          disabled={isView}
-                        />
-                        {!isView && formData.giftIds.length > 1 && (
-                          <Button type="button" variant="outline" size="sm" onClick={() => removeGiftId(index)}>
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* 签约策略 */}
-          <Card>
-            <CardHeader>
-              <CardTitle>签约策略</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="hasContract"
-                  checked={formData.hasContract}
-                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, hasContract: !!checked }))}
-                  disabled={isView}
-                />
-                <Label htmlFor="hasContract">有特定签约策略</Label>
-              </div>
-
-              {formData.hasContract && (
-                <div className="space-y-4 pl-6">
-                  <div className="flex items-center justify-between mb-2">
-                    <Label>签约策略配置</Label>
-                    {!isView && (
-                      <Button type="button" variant="outline" size="sm" onClick={addContractStrategy}>
-                        <Plus className="w-4 h-4 mr-1" />
-                        添加策略组
-                      </Button>
-                    )}
-                  </div>
-                  
-                  {formData.contractStrategies.map((strategy, index) => (
-                    <div key={index} className="border rounded-lg p-4 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-muted-foreground">策略组 {index + 1}</span>
-                        {!isView && formData.contractStrategies.length > 1 && (
-                          <Button type="button" variant="outline" size="sm" onClick={() => removeContractStrategy(index)}>
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        )}
-                      </div>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                          <Label>签约周期 *</Label>
-                          <div className="flex items-center space-x-2">
-                            <span className="text-sm">首</span>
-                            <Input
-                              type="number"
-                              value={strategy.period}
-                              onChange={(e) => updateContractStrategy(index, 'period', e.target.value)}
-                              placeholder="请输入次数"
-                              className="flex-1"
-                              disabled={isView}
-                            />
-                            <span className="text-sm">次</span>
-                          </div>
-                        </div>
-                        
-                        <div>
-                          <Label>签约价 *</Label>
-                          <div className="flex items-center space-x-2">
-                            <Input
-                              type="number"
-                              value={strategy.price}
-                              onChange={(e) => updateContractStrategy(index, 'price', e.target.value)}
-                              placeholder="请输入价格"
-                              className="flex-1"
-                              disabled={isView}
-                            />
-                            <span className="text-sm">元</span>
-                          </div>
-                        </div>
-                        
-                        <div>
-                          <Label>签约奖励</Label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label>开始时间 *</Label>
+                        <div className="flex space-x-2">
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="outline"
+                                className={cn(
+                                  "flex-1 justify-start text-left font-normal",
+                                  !formData.startDate && "text-muted-foreground"
+                                )}
+                                disabled={isView}
+                              >
+                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                {formData.startDate ? format(formData.startDate, "yyyy-MM-dd") : "选择日期"}
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                              <Calendar
+                                mode="single"
+                                selected={formData.startDate}
+                                onSelect={(date) => setFormData(prev => ({ ...prev, startDate: date }))}
+                                initialFocus
+                                className="pointer-events-auto"
+                              />
+                            </PopoverContent>
+                          </Popover>
                           <Input
-                            value={strategy.rewardId}
-                            onChange={(e) => updateContractStrategy(index, 'rewardId', e.target.value)}
-                            placeholder="奖励道具包ID（选填）"
+                            type="time"
+                            value={formData.startTime}
+                            onChange={(e) => setFormData(prev => ({ ...prev, startTime: e.target.value }))}
+                            className="w-32"
+                            disabled={isView}
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <Label>结束时间 *</Label>
+                        <div className="flex space-x-2">
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="outline"
+                                className={cn(
+                                  "flex-1 justify-start text-left font-normal",
+                                  !formData.endDate && "text-muted-foreground"
+                                )}
+                                disabled={isView}
+                              >
+                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                {formData.endDate ? format(formData.endDate, "yyyy-MM-dd") : "选择日期"}
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                              <Calendar
+                                mode="single"
+                                selected={formData.endDate}
+                                onSelect={(date) => setFormData(prev => ({ ...prev, endDate: date }))}
+                                initialFocus
+                                className="pointer-events-auto"
+                              />
+                            </PopoverContent>
+                          </Popover>
+                          <Input
+                            type="time"
+                            value={formData.endTime}
+                            onChange={(e) => setFormData(prev => ({ ...prev, endTime: e.target.value }))}
+                            className="w-32"
                             disabled={isView}
                           />
                         </div>
                       </div>
                     </div>
-                  ))}
-                  
-                  {formData.hasContract && formData.contractStrategies.length === 0 && !isView && (
-                    <div className="text-center py-4">
-                      <Button type="button" variant="outline" onClick={addContractStrategy}>
-                        <Plus className="w-4 h-4 mr-1" />
-                        添加第一个策略组
-                      </Button>
+
+                    <div>
+                      <Label>SKU类型 *</Label>
+                      <Select value={formData.skuType} onValueChange={(value) => setFormData(prev => ({ ...prev, skuType: value as SKUType }))} disabled={isView}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="请选择SKU类型" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {SKU_OPTIONS.map(option => (
+                            <SelectItem key={option} value={option}>{option}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
-                  )}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                  </CardContent>
+                </AccordionContent>
+              </Card>
+            </AccordionItem>
+
+            {/* 售卖价格 */}
+            <AccordionItem value="pricing">
+              <Card>
+                <AccordionTrigger className="px-6 py-4 hover:no-underline">
+                  <CardTitle>售卖价格</CardTitle>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <CardContent className="space-y-4 pt-0">
+                    <RadioGroup 
+                      value={formData.pricingType} 
+                      onValueChange={(value) => setFormData(prev => ({ ...prev, pricingType: value as 'manual' | 'algorithm' }))}
+                      disabled={isView}
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="manual" id="manual" disabled={isView} />
+                        <Label htmlFor="manual">运营出价</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="algorithm" id="algorithm" disabled={isView} />
+                        <Label htmlFor="algorithm">算法出价</Label>
+                      </div>
+                    </RadioGroup>
+
+                    {formData.pricingType === 'manual' ? (
+                      <div>
+                        <Label htmlFor="fixedPrice">固定价格</Label>
+                        <Input
+                          id="fixedPrice"
+                          type="number"
+                          value={formData.fixedPrice}
+                          onChange={(e) => setFormData(prev => ({ ...prev, fixedPrice: e.target.value }))}
+                          placeholder="请输入价格"
+                          disabled={isView}
+                        />
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="minPrice">最低价</Label>
+                          <Input
+                            id="minPrice"
+                            type="number"
+                            value={formData.minPrice}
+                            onChange={(e) => setFormData(prev => ({ ...prev, minPrice: e.target.value }))}
+                            placeholder="请输入最低价"
+                            disabled={isView}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="maxPrice">最高价</Label>
+                          <Input
+                            id="maxPrice"
+                            type="number"
+                            value={formData.maxPrice}
+                            onChange={(e) => setFormData(prev => ({ ...prev, maxPrice: e.target.value }))}
+                            placeholder="请输入最高价"
+                            disabled={isView}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </AccordionContent>
+              </Card>
+            </AccordionItem>
+
+            {/* 用户限购 */}
+            <AccordionItem value="purchase-limit">
+              <Card>
+                <AccordionTrigger className="px-6 py-4 hover:no-underline">
+                  <CardTitle>用户限购</CardTitle>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <CardContent className="space-y-4 pt-0">
+                    <div>
+                      <Label htmlFor="totalLimit">总购买次数限制</Label>
+                      <Input
+                        id="totalLimit"
+                        type="number"
+                        value={formData.totalPurchaseLimit}
+                        onChange={(e) => setFormData(prev => ({ ...prev, totalPurchaseLimit: e.target.value }))}
+                        placeholder="-1代表不限制"
+                        disabled={isView}
+                      />
+                    </div>
+
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <Label>分档限购</Label>
+                        {!isView && (
+                          <Button type="button" variant="outline" size="sm" onClick={addPriceLimit}>
+                            <Plus className="w-4 h-4 mr-1" />
+                            添加档位
+                          </Button>
+                        )}
+                      </div>
+                      
+                      {formData.priceLimits.map((priceLimit, index) => (
+                        <div key={index} className="flex items-center space-x-2">
+                          <Input
+                            type="number"
+                            value={priceLimit.price === 0 ? '' : priceLimit.price}
+                            onChange={(e) => updatePriceLimit(index, 'price', e.target.value)}
+                            placeholder="价格"
+                            className="flex-1"
+                            disabled={isView}
+                          />
+                          <span>元</span>
+                          <Input
+                            type="number"
+                            value={priceLimit.limit === 0 ? '' : priceLimit.limit}
+                            onChange={(e) => updatePriceLimit(index, 'limit', e.target.value)}
+                            placeholder="限购次数"
+                            className="flex-1"
+                            disabled={isView}
+                          />
+                          <span>次/人</span>
+                          {!isView && (
+                            <Button type="button" variant="outline" size="sm" onClick={() => removePriceLimit(index)}>
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </AccordionContent>
+              </Card>
+            </AccordionItem>
+
+            {/* 限时红包 */}
+            <AccordionItem value="red-packet">
+              <Card>
+                <AccordionTrigger className="px-6 py-4 hover:no-underline">
+                  <CardTitle>限时红包</CardTitle>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <CardContent className="space-y-4 pt-0">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="showRedPacket"
+                        checked={formData.showRedPacket}
+                        onCheckedChange={(checked) => setFormData(prev => ({ ...prev, showRedPacket: !!checked }))}
+                        disabled={isView}
+                      />
+                      <Label htmlFor="showRedPacket">展示红包动效</Label>
+                    </div>
+
+                    {formData.showRedPacket && (
+                      <div className="space-y-4 pl-6">
+                        <div>
+                          <Label htmlFor="redPacketMinutes">红包有效期（分钟）</Label>
+                          <Input
+                            id="redPacketMinutes"
+                            type="number"
+                            value={formData.redPacketMinutes}
+                            onChange={(e) => setFormData(prev => ({ ...prev, redPacketMinutes: e.target.value }))}
+                            placeholder="请输入有效期"
+                            disabled={isView}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>红包展示频次</Label>
+                          <div className="flex items-center space-x-2">
+                            <Input
+                              type="number"
+                              value={formData.redPacketFrequencyCount}
+                              onChange={(e) => setFormData(prev => ({ ...prev, redPacketFrequencyCount: e.target.value }))}
+                              placeholder="请输入次数"
+                              className="flex-1"
+                              disabled={isView}
+                            />
+                            <span>次 /</span>
+                            <Select 
+                              value={formData.redPacketFrequencyUnit} 
+                              onValueChange={(value) => setFormData(prev => ({ ...prev, redPacketFrequencyUnit: value as 'daily' | 'weekly' }))}
+                              disabled={isView}
+                            >
+                              <SelectTrigger className="w-32">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="daily">每天</SelectItem>
+                                <SelectItem value="weekly">每周</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </AccordionContent>
+              </Card>
+            </AccordionItem>
+
+            {/* 搭售买赠 */}
+            <AccordionItem value="bundle">
+              <Card>
+                <AccordionTrigger className="px-6 py-4 hover:no-underline">
+                  <CardTitle>搭售买赠</CardTitle>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <CardContent className="space-y-4 pt-0">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="hasBundle"
+                        checked={formData.hasBundle}
+                        onCheckedChange={(checked) => setFormData(prev => ({ ...prev, hasBundle: !!checked }))}
+                        disabled={isView}
+                      />
+                      <Label htmlFor="hasBundle">有搭售策略</Label>
+                    </div>
+
+                    {formData.hasBundle && (
+                      <div className="space-y-4 pl-6">
+                        <div>
+                          <Label>赠品类型</Label>
+                          <Select 
+                            value={formData.giftType} 
+                            onValueChange={(value) => setFormData(prev => ({ ...prev, giftType: value as '商品' | '道具' | '道具包' }))}
+                            disabled={isView}
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="商品">商品</SelectItem>
+                              <SelectItem value="道具">道具</SelectItem>
+                              <SelectItem value="道具包">道具包</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <Label>赠品发放ID</Label>
+                            {!isView && (
+                              <Button type="button" variant="outline" size="sm" onClick={addGiftId}>
+                                <Plus className="w-4 h-4 mr-1" />
+                                添加ID
+                              </Button>
+                            )}
+                          </div>
+                          
+                          {formData.giftIds.map((giftId, index) => (
+                            <div key={index} className="flex items-center space-x-2 mb-2">
+                              <Input
+                                value={giftId}
+                                onChange={(e) => updateGiftId(index, e.target.value)}
+                                placeholder="请输入赠品ID"
+                                className="flex-1"
+                                disabled={isView}
+                              />
+                              {!isView && formData.giftIds.length > 1 && (
+                                <Button type="button" variant="outline" size="sm" onClick={() => removeGiftId(index)}>
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </AccordionContent>
+              </Card>
+            </AccordionItem>
+
+            {/* 签约策略 */}
+            <AccordionItem value="contract">
+              <Card>
+                <AccordionTrigger className="px-6 py-4 hover:no-underline">
+                  <CardTitle>签约策略</CardTitle>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <CardContent className="space-y-4 pt-0">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="hasContract"
+                        checked={formData.hasContract}
+                        onCheckedChange={(checked) => setFormData(prev => ({ ...prev, hasContract: !!checked }))}
+                        disabled={isView}
+                      />
+                      <Label htmlFor="hasContract">有特定签约策略</Label>
+                    </div>
+
+                    {formData.hasContract && (
+                      <div className="space-y-4 pl-6">
+                        <div className="flex items-center justify-between mb-2">
+                          <Label>签约策略配置</Label>
+                          {!isView && (
+                            <Button type="button" variant="outline" size="sm" onClick={addContractStrategy}>
+                              <Plus className="w-4 h-4 mr-1" />
+                              添加策略组
+                            </Button>
+                          )}
+                        </div>
+                        
+                        {formData.contractStrategies.map((strategy, index) => (
+                          <div key={index} className="border rounded-lg p-4 space-y-3">
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm font-medium text-muted-foreground">策略组 {index + 1}</span>
+                              {!isView && formData.contractStrategies.length > 1 && (
+                                <Button type="button" variant="outline" size="sm" onClick={() => removeContractStrategy(index)}>
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              )}
+                            </div>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                              <div>
+                                <Label>签约周期 *</Label>
+                                <div className="flex items-center space-x-2">
+                                  <span className="text-sm">首</span>
+                                  <Input
+                                    type="number"
+                                    value={strategy.period}
+                                    onChange={(e) => updateContractStrategy(index, 'period', e.target.value)}
+                                    placeholder="请输入次数"
+                                    className="flex-1"
+                                    disabled={isView}
+                                  />
+                                  <span className="text-sm">次</span>
+                                </div>
+                              </div>
+                              
+                              <div>
+                                <Label>签约价 *</Label>
+                                <div className="flex items-center space-x-2">
+                                  <Input
+                                    type="number"
+                                    value={strategy.price}
+                                    onChange={(e) => updateContractStrategy(index, 'price', e.target.value)}
+                                    placeholder="请输入价格"
+                                    className="flex-1"
+                                    disabled={isView}
+                                  />
+                                  <span className="text-sm">元</span>
+                                </div>
+                              </div>
+                              
+                              <div>
+                                <Label>签约奖励</Label>
+                                <Input
+                                  value={strategy.rewardId}
+                                  onChange={(e) => updateContractStrategy(index, 'rewardId', e.target.value)}
+                                  placeholder="奖励道具包ID（选填）"
+                                  disabled={isView}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                        
+                        {formData.hasContract && formData.contractStrategies.length === 0 && !isView && (
+                          <div className="text-center py-4">
+                            <Button type="button" variant="outline" onClick={addContractStrategy}>
+                              <Plus className="w-4 h-4 mr-1" />
+                              添加第一个策略组
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </CardContent>
+                </AccordionContent>
+              </Card>
+            </AccordionItem>
+          </Accordion>
         </div>
       </div>
     </div>
